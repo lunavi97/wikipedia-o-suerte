@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.text.html.HTML;
 
@@ -31,7 +33,8 @@ public class WikipediaOSuerte {
 		String urlString = "https://es.wikipedia.org/wiki/" + tema;
 		String content = getContent(urlString);
 		content = principioDeWikipedia(content);
-		return urlString;
+		content = sanitization(content);
+		return urlString + "\n" + content;
 	}
 	
 	private String voyATenerSuerte(String tema) throws MalformedURLException {
@@ -59,8 +62,25 @@ public class WikipediaOSuerte {
 	    int posInicio = principio.indexOf("<p><b>") + 6;
 	    int posFin = principio.indexOf("</p>");
 	    principio = principio.substring(posInicio, posFin);
-	    System.out.println(principio);
         return principio;
+	}
+	
+	private String sanitization(String text) {
+	    
+	    String result = text;
+	    final String HTMLTAG = "<.*?>|\\[.*?\\]|&#.\\w+;?";
+	    
+	    final Pattern pattern = Pattern.compile(HTMLTAG, Pattern.MULTILINE);
+	    final Matcher matcher = pattern.matcher(result);
+	    
+	    while (matcher.find()) {
+	        result = result.replace(matcher.group(0), "");
+	        for (int i = 1; i <= matcher.groupCount(); i++) {
+	            result = result.replace(matcher.group(i), "");
+	        }
+	    }
+	    
+	    return result;
 	}
 	
 }
